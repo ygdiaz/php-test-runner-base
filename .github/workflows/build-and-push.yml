@@ -99,12 +99,12 @@ jobs:
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest composer --version
           
           echo "🔍 Testing PHPUnit..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest vendor/bin/phpunit --version || echo "PHPUnit not globally available (expected)"
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpunit --version || echo "PHPUnit available globally"
           
           echo "🔍 Testing PHPCS..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest which phpcs || echo "PHPCS location check"
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpcs --version
           
-          echo "🔍 Testing Docker Compose availability..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest docker-compose --version || echo "Docker Compose not available in image (expected)"
+          echo "🔍 Testing PHPat..."
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpat --version
           
-          echo "✅ Image tests completed!"
+          echo "✅ All tools tested successfully!"

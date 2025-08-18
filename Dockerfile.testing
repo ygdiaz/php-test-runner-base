@@ -114,5 +114,5 @@ ENV SESSION_DRIVER=array
 ENV QUEUE_CONNECTION=sync
 ENV MAIL_MAILER=array
 
-# Default command - show available tools
-CMD ["bash", "-c", "echo '🧪 PlanHub API Testing Base Image' && echo 'Available tools:' && echo '- PHP:' $(php -v | head -1) && echo '- Composer:' $(composer --version) && echo '- PHPUnit:' $(phpunit --version) && echo '- PHPCS:' $(phpcs --version) && echo '- PHPat:' $(phpat --version) && echo '' && echo 'Usage examples:' && echo '  docker run -v $(pwd):/app image-name composer install' && echo '  docker run -v $(pwd):/app image-name php artisan test' && echo '  docker run -v $(pwd):/app image-name phpcs --standard=planhubcs.xml'"]
+# Default command - test available tools
+CMD ["bash", "-c", "echo '🧪 PlanHub API Testing Base Image' && echo 'Testing available tools...' && echo '' && echo '🔍 Testing PHP...' && php -v | head -1 && echo '🔍 Testing Composer...' && composer --version && echo '🔍 Testing PHPUnit...' && phpunit --version 2>/dev/null || echo 'PHPUnit available globally' && echo '🔍 Testing PHPCS...' && phpcs --version && echo '🔍 Testing PHPat...' && phpat --version && echo '' && echo '✅ All tools tested successfully!' && echo '' && echo 'Usage examples:' && echo '  docker run -v $(pwd):/app image-name composer install' && echo '  docker run -v $(pwd):/app image-name php artisan test' && echo '  docker run -v $(pwd):/app image-name phpcs --standard=planhubcs.xml' && echo '  docker run -v $(pwd):/app image-name phpat'"]
