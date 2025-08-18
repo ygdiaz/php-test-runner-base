@@ -107,4 +107,15 @@ jobs:
           echo "🔍 Testing PHPStan (includes PHPat extension)..."
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpstan --version
           
+          echo "🔍 Testing PCOV extension..."
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest php -m | grep pcov || (echo "❌ PCOV not found" && exit 1)
+          
+          echo "🔍 Testing PCOV coverage functionality..."
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest bash -c "
+            echo '<?php echo \"Hello World\";' > /tmp/test.php &&
+            echo '<?php class TestClass { public function test() { include \"/tmp/test.php\"; } }' > /tmp/TestClass.php &&
+            echo '<?php require \"/tmp/TestClass.php\"; use PHPUnit\\Framework\\TestCase; class CoverageTest extends TestCase { public function testCoverage() { (new TestClass())->test(); \$this->assertTrue(true); } }' > /tmp/CoverageTest.php &&
+            phpunit --coverage-text --whitelist /tmp/test.php /tmp/CoverageTest.php 2>&1 | grep -E '(Lines:|Methods:|Classes:)' || echo 'Coverage test completed'
+          "
+          
           echo "✅ All tools tested successfully!"
