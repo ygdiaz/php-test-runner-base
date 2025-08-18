@@ -33,7 +33,9 @@ RUN apk add --no-cache \
     mysql-client \
     sqlite \
     sqlite-dev \
-    jq
+    jq \
+    graphviz \
+    ttf-dejavu
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
