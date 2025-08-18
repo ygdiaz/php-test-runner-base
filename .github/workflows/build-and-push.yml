@@ -99,19 +99,12 @@ jobs:
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest composer --version
           
           echo "🔍 Testing PHPUnit..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpunit --version || echo "PHPUnit available globally"
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpunit --version
           
           echo "🔍 Testing PHPCS..."
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpcs --version
           
-          echo "🔍 Debugging PHPat installation..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest bash -c "
-            echo 'PHPat package info:'
-            composer global info phpat/phpat || echo 'Cannot get PHPat info'
-            echo 'All files in PHPat vendor directory:'
-            find /home/planhub/.composer/vendor/phpat -type f 2>/dev/null || echo 'PHPat vendor directory not found'
-            echo 'Trying to run PHPat directly:'
-            php /home/planhub/.composer/vendor/phpat/phpat/phpat --version 2>/dev/null || echo 'Direct execution failed'
-          "
+          echo "🔍 Testing PHPStan (includes PHPat extension)..."
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpstan --version
           
-          echo "✅ All tools tested!"
+          echo "✅ All tools tested successfully!"
