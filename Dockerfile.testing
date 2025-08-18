@@ -65,14 +65,18 @@ RUN pecl install swoole \
 # Get latest Composer
 COPY --from=composer:lts /usr/bin/composer /usr/bin/composer
 
-# Install global testing tools and copy them to globally accessible location
-RUN composer global require \
+# Set COMPOSER_HOME to install globally accessible tools
+ENV COMPOSER_HOME=/usr/local/composer
+
+# Install global testing tools in globally accessible location
+RUN COMPOSER_HOME=/usr/local/composer composer global require \
         phpunit/phpunit:^9.0 \
         squizlabs/php_codesniffer:^3.11 \
         phpat/phpat:^0.10 \
-    && composer global clear-cache \
-    && cp /root/.composer/vendor/bin/* /usr/local/bin/ \
-    && chmod +x /usr/local/bin/*
+    && COMPOSER_HOME=/usr/local/composer composer global clear-cache
+
+# Add global composer bin to PATH
+ENV PATH="/usr/local/composer/vendor/bin:${PATH}"
 
 # Configure PHP for testing with more memory
 RUN echo "memory_limit=1G" >> /usr/local/etc/php/conf.d/testing.ini \
