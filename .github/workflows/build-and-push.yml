@@ -107,6 +107,9 @@ jobs:
           echo "🔍 Testing PHPStan (includes PHPat extension)..."
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpstan --version
           
+          echo "🔍 Testing Deptrac..."
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest deptrac --version
+          
           echo "🔍 Testing PCOV extension..."
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest php -m | grep pcov || (echo "❌ PCOV not found" && exit 1)
           
