@@ -77,7 +77,7 @@ RUN COMPOSER_HOME=/usr/local/composer composer global require \
         phpunit/phpunit:^9.0 \
         squizlabs/php_codesniffer:^3.11 \
         phpat/phpat:^0.10 \
-        qossmic/deptrac:^4.0 \
+        deptrac/deptrac \
     && COMPOSER_HOME=/usr/local/composer composer global clear-cache
 
 # Add global composer bin to PATH
