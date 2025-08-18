@@ -77,15 +77,11 @@ RUN COMPOSER_HOME=/usr/local/composer composer global require \
         phpunit/phpunit:^9.0 \
         squizlabs/php_codesniffer:^3.11 \
         phpat/phpat:^0.10 \
+        qossmic/deptrac:^4.0 \
     && COMPOSER_HOME=/usr/local/composer composer global clear-cache
 
 # Add global composer bin to PATH
 ENV PATH="/usr/local/composer/vendor/bin:${PATH}"
-
-# Install Deptrac for architecture testing
-RUN curl -L https://github.com/qossmic/deptrac/releases/download/1.0.2/deptrac.phar -o /usr/local/bin/deptrac \
-    && chmod +x /usr/local/bin/deptrac \
-    && /usr/local/bin/deptrac --version
 
 # Configure PHP for testing with more memory
 RUN echo "memory_limit=1G" >> /usr/local/etc/php/conf.d/testing.ini \
