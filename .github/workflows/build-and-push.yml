@@ -106,15 +106,12 @@ jobs:
           
           echo "🔍 Debugging PHPat installation..."
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest bash -c "
-            echo 'Checking composer packages:'
-            composer global show | grep phpat || echo 'PHPat not in composer global list'
-            echo 'Checking vendor directory:'
-            find /home/planhub/.composer/vendor -name '*phpat*' -type f || echo 'No phpat files found'
-            echo 'Checking if phpat binary exists elsewhere:'
-            find /home/planhub/.composer -name 'phpat' -type f || echo 'No phpat binary found'
+            echo 'PHPat package info:'
+            composer global info phpat/phpat || echo 'Cannot get PHPat info'
+            echo 'All files in PHPat vendor directory:'
+            find /home/planhub/.composer/vendor/phpat -type f 2>/dev/null || echo 'PHPat vendor directory not found'
+            echo 'Trying to run PHPat directly:'
+            php /home/planhub/.composer/vendor/phpat/phpat/phpat --version 2>/dev/null || echo 'Direct execution failed'
           "
-          
-          echo "🔍 Testing PHPat..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpat --version || echo "PHPat not found"
           
           echo "✅ All tools tested!"
