@@ -20,11 +20,12 @@ on:
       tag:
         description: 'Custom tag for the image (optional)'
         required: false
-        default: 'latest'
+        default: 'php-8.1.33'
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ygdiaz/php-test-runner-base
+  PHP_VERSION: php-8.1.33
 
 jobs:
   build-and-push:
@@ -55,9 +56,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest
-            type=ref,event=branch
-            type=sha
+            type=raw,value=${{ env.PHP_VERSION }}
+            type=ref,event=branch,prefix=${{ env.PHP_VERSION }}-
+            type=sha,prefix=${{ env.PHP_VERSION }}-
 
       - name: 🏗️ Build and push Docker image
         uses: docker/build-push-action@v5
@@ -93,31 +94,31 @@ jobs:
       - name: 🧪 Test image functionality
         run: |
           echo "🔍 Testing PHP version..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest php --version
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PHP_VERSION }} php --version
           
           echo "🔍 Testing Composer..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest composer --version
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PHP_VERSION }} composer --version
           
           echo "🔍 Testing PHPUnit..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpunit --version
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PHP_VERSION }} phpunit --version
           
           echo "🔍 Testing PHPCS..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpcs --version
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PHP_VERSION }} phpcs --version
           
           echo "🔍 Testing PHPStan (includes PHPat extension)..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest phpstan --version
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PHP_VERSION }} phpstan --version
           
           echo "🔍 Testing Deptrac..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest deptrac --version
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PHP_VERSION }} deptrac --version
           
           echo "🔍 Testing Graphviz..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest dot -V
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PHP_VERSION }} dot -V
           
           echo "🔍 Testing PCOV extension..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest php -m | grep pcov || (echo "❌ PCOV not found" && exit 1)
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PHP_VERSION }} php -m | grep pcov || (echo "❌ PCOV not found" && exit 1)
           
           echo "🔍 Testing PCOV coverage functionality..."
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest bash -c "
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.PHP_VERSION }} bash -c "
             echo '<?php echo \"Hello World\";' > /tmp/test.php &&
             echo '<?php class TestClass { public function test() { include \"/tmp/test.php\"; } }' > /tmp/TestClass.php &&
             echo '<?php require \"/tmp/TestClass.php\"; use PHPUnit\\Framework\\TestCase; class CoverageTest extends TestCase { public function testCoverage() { (new TestClass())->test(); \$this->assertTrue(true); } }' > /tmp/CoverageTest.php &&
