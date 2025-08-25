@@ -4,7 +4,7 @@ A pre-built Docker image optimized for PHP testing environments, specifically de
 
 ## 🚀 Features
 
-- **PHP 8.2** with all necessary extensions
+- **PHP 8.1.33** with all necessary extensions
 - **Composer** for dependency management
 - **PHPUnit** for testing
 - **PHPCS** for code standards
