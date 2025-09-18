@@ -68,8 +68,8 @@ RUN pecl install swoole \
 RUN pecl install pcov \
     && docker-php-ext-enable pcov
 
-# Get latest Composer
-COPY --from=composer:lts /usr/bin/composer /usr/bin/composer
+# Get Composer 2.3
+COPY --from=composer:2.3 /usr/bin/composer /usr/bin/composer
 
 # Set COMPOSER_HOME to install globally accessible tools
 ENV COMPOSER_HOME=/usr/local/composer
