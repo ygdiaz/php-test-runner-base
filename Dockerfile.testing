@@ -74,9 +74,13 @@ COPY --from=composer:2.3 /usr/bin/composer /usr/bin/composer
 # Set COMPOSER_HOME to install globally accessible tools
 ENV COMPOSER_HOME=/usr/local/composer
 
+# Cache-bust so CI always rebuilds this layer after deptrac pin (avoids stale GHA cache)
+ARG COMPOSER_DEPS_REV=1
+
 # Install global testing tools in globally accessible location
 # Pin deptrac to ^3.x: 4.x requires php ^8.2 and phpstan ^2.0, which conflicts with phpat (phpstan ^1.x)
-RUN COMPOSER_HOME=/usr/local/composer composer global require \
+RUN echo "Composer deps rev: ${COMPOSER_DEPS_REV}" \
+    && COMPOSER_HOME=/usr/local/composer composer global require \
         phpunit/phpunit:^9.0 \
         squizlabs/php_codesniffer:^3.11 \
         phpat/phpat:^0.10 \
