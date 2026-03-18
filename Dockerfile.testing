@@ -91,7 +91,7 @@ RUN echo "Composer deps rev: ${COMPOSER_DEPS_REV}" \
 ENV PATH="/usr/local/composer/vendor/bin:${PATH}"
 
 # Configure PHP for testing with more memory
-RUN echo "memory_limit=1G" >> /usr/local/etc/php/conf.d/testing.ini \
+RUN echo "memory_limit=4G" >> /usr/local/etc/php/conf.d/testing.ini \
     && echo "max_execution_time=300" >> /usr/local/etc/php/conf.d/testing.ini \
     && echo "display_errors=On" >> /usr/local/etc/php/conf.d/testing.ini \
     && echo "log_errors=On" >> /usr/local/etc/php/conf.d/testing.ini
