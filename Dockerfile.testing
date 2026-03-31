@@ -1,5 +1,5 @@
-# Use PHP 8.1.33 CLI Alpine as base image for testing
-FROM php:8.1.33-cli-alpine
+# Use PHP 8.1.33 CLI Debian as base image for testing
+FROM php:8.1.33-cli-bookworm
 
 # Set labels for better image management
 LABEL maintainer="PlanHub Development Team"
@@ -9,37 +9,59 @@ LABEL version="1.0"
 # Set working directory
 WORKDIR /app
 
+# Keep extension/tool versions explicit
+ARG DUCKDB_VERSION=1.5.1
+ARG TARGETARCH
+
 # Install system dependencies
-RUN apk add --no-cache \
-    git \
-    curl \
-    curl-dev \
-    libpng-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    oniguruma-dev \
-    libzip-dev \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    icu-dev \
-    autoconf \
-    g++ \
-    make \
-    openssl-dev \
-    linux-headers \
-    bash \
-    mysql-client \
-    sqlite \
-    sqlite-dev \
-    jq \
-    graphviz \
-    ttf-dejavu
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        git \
+        curl \
+        libcurl4-openssl-dev \
+        libpng-dev \
+        libxml2-dev \
+        zip \
+        unzip \
+        libonig-dev \
+        libzip-dev \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libwebp-dev \
+        libicu-dev \
+        autoconf \
+        g++ \
+        make \
+        libssl-dev \
+        linux-libc-dev \
+        bash \
+        default-mysql-client \
+        sqlite3 \
+        libsqlite3-dev \
+        jq \
+        graphviz \
+        fonts-dejavu-core \
+        ca-certificates; \
+    rm -rf /var/lib/apt/lists/*
+
+# Install DuckDB CLI (prebuilt glibc binary, multi-arch aware)
+RUN set -eux; \
+    case "${TARGETARCH}" in \
+      amd64) DUCK_ARCH="amd64" ;; \
+      arm64) DUCK_ARCH="arm64" ;; \
+      *) echo "Unsupported TARGETARCH=${TARGETARCH} for DuckDB"; exit 1 ;; \
+    esac; \
+    curl -fsSL "https://install.duckdb.org/v${DUCKDB_VERSION}/duckdb_cli-linux-${DUCK_ARCH}.zip" -o /tmp/duckdb.zip; \
+    unzip -q /tmp/duckdb.zip -d /usr/local/bin; \
+    chmod +x /usr/local/bin/duckdb; \
+    rm -f /tmp/duckdb.zip; \
+    duckdb -version
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install \
+        -j"$(nproc)" \
         pdo_mysql \
         pdo_sqlite \
         mbstring \
@@ -52,21 +74,14 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
         soap \
         opcache
 
-# Install MongoDB extension
-RUN pecl install mongodb-1.21.0 \
-    && docker-php-ext-enable mongodb
-
-# Install Redis extension
-RUN pecl install redis \
-    && docker-php-ext-enable redis
-
-# Install Swoole extension (pin to 5.x: 6.x requires PHP >= 8.2)
-RUN pecl install swoole-5.1.8 \
-    && docker-php-ext-enable swoole
-
-# Install PCOV for code coverage (faster than Xdebug)
-RUN pecl install pcov \
-    && docker-php-ext-enable pcov
+# Install PECL extensions (pin where already pinned in current image)
+RUN set -eux; \
+    pecl install \
+      mongodb-1.21.0 \
+      redis \
+      swoole-5.1.8 \
+      pcov; \
+    docker-php-ext-enable mongodb redis swoole pcov
 
 # Get Composer 2.3
 COPY --from=composer:2.3 /usr/bin/composer /usr/bin/composer
@@ -99,8 +114,8 @@ RUN echo "memory_limit=4G" >> /usr/local/etc/php/conf.d/testing.ini \
     && echo "pcov.exclude=\"#(vendor|tests|storage|bootstrap/cache)#\"" >> /usr/local/etc/php/conf.d/testing.ini
 
 # Create planhub user
-RUN addgroup -g 1000 planhub \
-    && adduser -u 1000 -G planhub -s /bin/bash -D planhub
+RUN groupadd -g 1000 planhub \
+    && useradd -u 1000 -g planhub -m -s /bin/bash planhub
 
 # Create necessary directories with proper permissions
 RUN mkdir -p /app/storage/logs \

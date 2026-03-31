@@ -4,10 +4,11 @@ A pre-built Docker image optimized for PHP testing environments, specifically de
 
 ## 🚀 Features
 
-- **PHP 8.1.33** with all necessary extensions
+- **PHP 8.1.33** (Debian Bookworm base) with all necessary extensions
 - **Composer** for dependency management
 - **PHPUnit** for testing
 - **PHPCS** for code standards
+- **DuckDB CLI** preinstalled (amd64 + arm64 builds)
 - **MySQL, Redis, MongoDB** client support
 - **Multi-architecture support** (AMD64 + ARM64)
 - **Optimized for CI/CD** pipelines
@@ -72,6 +73,7 @@ script:
 ## 🔧 Included Tools
 
 - **PHP 8.1** with extensions: mysqli, pdo_mysql, redis, mongodb, gd, zip, etc.
+- **DuckDB CLI** - prebuilt binary under `/usr/local/bin/duckdb`
 - **Composer** - Latest stable version
 - **PHPUnit** - Via Composer
 - **PHPCS** - Code standards checking
