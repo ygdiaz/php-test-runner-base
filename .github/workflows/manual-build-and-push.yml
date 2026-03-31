@@ -1,0 +1,102 @@
+name: Manual Build and Push Test Runner Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_variant:
+        description: "Which image to build"
+        required: true
+        type: choice
+        default: ph-api
+        options:
+          - ph-api
+          - openapi
+      custom_tag:
+        description: "Optional extra tag (example: my-branch-test)"
+        required: false
+        type: string
+      push_image:
+        description: "Push image to GHCR"
+        required: true
+        type: boolean
+        default: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ygdiaz/php-test-runner-base
+
+jobs:
+  resolve-config:
+    runs-on: ubuntu-latest
+    outputs:
+      dockerfile: ${{ steps.cfg.outputs.dockerfile }}
+      base_tag: ${{ steps.cfg.outputs.base_tag }}
+      test_command: ${{ steps.cfg.outputs.test_command }}
+    steps:
+      - name: Resolve build configuration
+        id: cfg
+        shell: bash
+        run: |
+          if [[ "${{ inputs.image_variant }}" == "openapi" ]]; then
+            echo "dockerfile=Dockerfile.testing-openapi" >> "$GITHUB_OUTPUT"
+            echo "base_tag=php-8.2-openapi" >> "$GITHUB_OUTPUT"
+            echo "test_command=phpunit --version && phpcs --version && duckdb -version" >> "$GITHUB_OUTPUT"
+          else
+            echo "dockerfile=Dockerfile.testing" >> "$GITHUB_OUTPUT"
+            echo "base_tag=php-8.1.33" >> "$GITHUB_OUTPUT"
+            echo "test_command=phpunit --version && phpcs --version && phpstan --version && deptrac --version && dot -V" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-push:
+    needs: resolve-config
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        if: ${{ inputs.push_image }}
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ needs.resolve-config.outputs.base_tag }}
+            type=sha,prefix=${{ needs.resolve-config.outputs.base_tag }}-
+            type=raw,value=${{ inputs.custom_tag }},enable=${{ inputs.custom_tag != '' }}
+
+      - name: Build and optionally push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./${{ needs.resolve-config.outputs.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ inputs.push_image }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            COMPOSER_DEPS_REV=2
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test built image
+        shell: bash
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.resolve-config.outputs.base_tag }}"
+          docker run --rm "$IMAGE" php --version
+          docker run --rm "$IMAGE" composer --version
+          docker run --rm "$IMAGE" bash -lc "${{ needs.resolve-config.outputs.test_command }}"

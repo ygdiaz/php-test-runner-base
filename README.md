@@ -4,7 +4,8 @@ A pre-built Docker image optimized for PHP testing environments, specifically de
 
 ## 🚀 Features
 
-- **PHP 8.1.33** (Debian Bookworm base) with all necessary extensions
+- **PHP 8.1.33** runner for `planhub-api`
+- **PHP 8.2** runner for `planhub-openapi`
 - **Composer** for dependency management
 - **PHPUnit** for testing
 - **PHPCS** for code standards
@@ -18,6 +19,8 @@ A pre-built Docker image optimized for PHP testing environments, specifically de
 - `ghcr.io/ygdiaz/php-test-runner-base:latest` - Latest stable build
 - `ghcr.io/ygdiaz/php-test-runner-base:main` - Latest from main branch
 - `ghcr.io/ygdiaz/php-test-runner-base:<sha>` - Specific commit builds
+- `ghcr.io/ygdiaz/php-test-runner-base:php-8.1.33` - API runner baseline
+- `ghcr.io/ygdiaz/php-test-runner-base:php-8.2-openapi` - OpenAPI runner baseline
 
 ## 🏗️ Building
 
@@ -27,11 +30,22 @@ The image is automatically built and pushed to GitHub Container Registry via Git
 - Pull requests are created (build only, no push)
 - Manual workflow dispatch is triggered
 
+### Manual dispatch with image selection
+
+Use the workflow `Manual Build and Push Test Runner Image` and choose:
+
+- `image_variant`: `ph-api` (PHP 8.1.33) or `openapi` (PHP 8.2)
+- `custom_tag`: optional extra tag
+- `push_image`: whether to push to GHCR
+
 ### Manual Build
 
 ```bash
-# Build locally (single architecture)
+# Build API runner locally (single architecture)
 docker build -f Dockerfile.testing -t php-test-runner-base:local .
+
+# Build OpenAPI runner locally (single architecture)
+docker build -f Dockerfile.testing-openapi -t php-test-runner-base:openapi-local .
 
 # Build multi-architecture (requires buildx)
 docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile.testing -t php-test-runner-base:multi .
