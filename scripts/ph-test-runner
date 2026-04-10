@@ -6,7 +6,7 @@ shift || true
 
 case "$COMMAND" in
   planhub-api-phpstan)
-    composer install --no-interaction --quiet --ignore-platform-req=ext-sockets --ignore-platform-req=ext-gmp
+    composer install --no-interaction --quiet --no-scripts --ignore-platform-req=ext-sockets --ignore-platform-req=ext-gmp
     php -d memory_limit=2G vendor/bin/phpstan analyse -c phpstan.dist.neon "$@"
     ;;
 
