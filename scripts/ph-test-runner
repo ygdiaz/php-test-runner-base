@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+COMMAND="${1:-help}"
+shift || true
+
+case "$COMMAND" in
+  planhub-api-phpstan)
+    composer install --no-interaction --quiet --ignore-platform-req=ext-sockets --ignore-platform-req=ext-gmp
+    php -d memory_limit=2G vendor/bin/phpstan analyse -c phpstan.dist.neon "$@"
+    ;;
+
+  help|--help|-h)
+    cat <<'EOF'
+Usage: ph-test-runner <command> [args...]
+
+Commands:
+  planhub-api-phpstan   Install deps and run PHPStan for planhub-api
+  help                  Show this help
+EOF
+    ;;
+
+  *)
+    echo "Unknown command: $COMMAND" >&2
+    echo "Run: ph-test-runner help" >&2
+    exit 1
+    ;;
+esac
