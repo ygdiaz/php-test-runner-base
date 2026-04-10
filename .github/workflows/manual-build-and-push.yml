@@ -99,4 +99,4 @@ jobs:
           IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.resolve-config.outputs.base_tag }}"
           docker run --rm "$IMAGE" php --version
           docker run --rm "$IMAGE" composer --version
-          docker run --rm "$IMAGE" bash -lc "${{ needs.resolve-config.outputs.test_command }}"
+          docker run --rm "$IMAGE" bash -c "${{ needs.resolve-config.outputs.test_command }}"
