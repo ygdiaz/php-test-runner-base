@@ -83,6 +83,9 @@ RUN COMPOSER_HOME=/usr/local/composer composer global require \
 
 ENV PATH="/usr/local/composer/vendor/bin:${PATH}"
 
+COPY scripts/ph-test-runner /usr/local/bin/ph-test-runner
+RUN chmod +x /usr/local/bin/ph-test-runner
+
 RUN echo "memory_limit=4G" >> /usr/local/etc/php/conf.d/testing.ini \
     && echo "max_execution_time=300" >> /usr/local/etc/php/conf.d/testing.ini \
     && echo "display_errors=On" >> /usr/local/etc/php/conf.d/testing.ini \

@@ -84,6 +84,14 @@ script:
       php artisan test
 ```
 
+#### Built-in helper command
+
+```bash
+# planhub-api: install deps + run phpstan with project config
+docker run --rm -v "$(pwd):/app" ghcr.io/ygdiaz/php-test-runner-base:latest \
+  ph-test-runner planhub-api-phpstan
+```
+
 ## 🔧 Included Tools
 
 - **PHP 8.1** with extensions: mysqli, pdo_mysql, redis, mongodb, gd, zip, etc.
